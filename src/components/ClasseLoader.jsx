@@ -161,7 +161,39 @@ function ClasseLoader({ side }) {
                     // For each field in the document, set the session storage item
                     if (doc.data().players) {
                         Object.entries(doc.data()).forEach(([key, value]) => {
-                            sessionStorage.setItem(key, value);
+                            // Handle scontri migration: convert old format (with winner objects) to new format (with winnerId)
+                            if (key === 'scontri' && Array.isArray(value)) {
+                                const migratedScontri = value.map(scontro => {
+                                    // If scontro has old format with winner object, migrate to winnerId
+                                    if (scontro.winner && typeof scontro.winner === 'object' && scontro.winner.id) {
+                                        const { winner, player1, player2, ...rest } = scontro;
+                                        return {
+                                            ...rest,
+                                            winnerId: winner.id,
+                                            player1Id: player1?.id || scontro.player1Id,
+                                            player2Id: player2?.id || scontro.player2Id,
+                                        };
+                                    }
+                                    // Already in new format
+                                    return scontro;
+                                });
+                                sessionStorage.setItem(key, JSON.stringify(migratedScontri));
+                            } else if (typeof value === 'object') {
+                                // Stringify objects and arrays
+                                sessionStorage.setItem(key, JSON.stringify(value));
+                            } else if (typeof value === 'string') {
+                                // Handle strings that might already be stringified
+                                try {
+                                    // Try to parse - if it works, it's already stringified JSON
+                                    JSON.parse(value);
+                                    sessionStorage.setItem(key, value);
+                                } catch {
+                                    // Not JSON, store as is
+                                    sessionStorage.setItem(key, value);
+                                }
+                            } else {
+                                sessionStorage.setItem(key, value);
+                            }
                         });
                     } else {
                         sessionStorage.clear();
@@ -169,7 +201,7 @@ function ClasseLoader({ side }) {
                     }
 
                     toogleOpening({ target: { dataset: { dropdownToggle: 'dropdown' } } });
-                    
+
                     window.dispatchEvent(new Event('ClasseSelected'));
                 } else {
                     console.error("No such document!");
