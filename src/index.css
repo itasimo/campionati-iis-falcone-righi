@@ -8,21 +8,33 @@
     --color-primary: #CFE1B9;
     --color-secondary: #718355;
     --color-tertiary: #87986A;
-    --sb-size: 5px;
+    --sb-size: 6px;
 }
-  
+
 ::-webkit-scrollbar {
-    width: var(--sb-size)
+    width: var(--sb-size);
+    height: var(--sb-size);
 }
 
 ::-webkit-scrollbar-track {
     background: var(--color-primary);
-    border-radius: 50px;
+    border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
     background: var(--color-secondary);
-    border-radius: 50px;
+    border-radius: 10px;
+    border: 2px solid var(--color-primary);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color-tertiary);
+}
+
+/* Firefox scrollbar styling */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-secondary) var(--color-primary);
 }
 
 *{

@@ -12,8 +12,8 @@ function Grafico() {
 
         const handleStorageChange = () => {
             const scontri = JSON.parse(sessionStorage.getItem('scontri')) || [];
-            const scontriDaGiocare = scontri.filter(scontro => scontro.winner === null);
-            const scontriGiocati = scontri.filter(scontro => scontro.winner !== null);
+            const scontriDaGiocare = scontri.filter(scontro => scontro.winnerId === null || scontro.winnerId === undefined);
+            const scontriGiocati = scontri.filter(scontro => scontro.winnerId !== null && scontro.winnerId !== undefined);
 
             setData([
                 ["Task", "Scontri"],

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { auth, db } from "../config/firebaseConfig";
 import { doc, updateDoc, deleteDoc, getDoc } from "firebase/firestore";
 import { getAuth, signOut } from "firebase/auth";
-import CalcolaScontri from '../scripts/CalcolaScontri';
+import CalcolaScontri from '../scripts/calculateMatches';
 import ClasseLoader from './ClasseLoader';
 import { saveNow } from '../scripts/Save';
 import { OpenPopUp } from '../utils/popup';
@@ -10,7 +10,7 @@ import EliminaClassePopUp from './popup/EliminaClasse';
 
 function Settings() {
 
-    const [settings, setSettings] = useState( JSON.parse(sessionStorage.getItem('settings')) || JSON.parse(localStorage.getItem('defSettings')));
+    const [settings, setSettings] = useState(() => JSON.parse(sessionStorage.getItem('settings')) || JSON.parse(localStorage.getItem('defSettings')));
 
     useEffect(() => {
         const updateSettings = () => {
@@ -105,6 +105,37 @@ function Settings() {
         });
     }
 
+    const handleBackup = () => {
+        const classe = JSON.parse(localStorage.getItem('classe'));
+        const players = JSON.parse(sessionStorage.getItem('players')) || [];
+        const scontri = JSON.parse(sessionStorage.getItem('scontri')) || [];
+        const settings = JSON.parse(sessionStorage.getItem('settings')) || {};
+
+        const backupData = {
+            players,
+            scontri,
+            settings,
+            classe,
+            backupDate: new Date().toISOString()
+        };
+
+        // Format timestamp as YYYY-MM-DD_HH-MM-SS
+        const now = new Date();
+        const timestamp = now.toISOString().slice(0, 19).replace(/:/g, '-').replace('T', '_');
+        const fileName = `backup-campionato-${timestamp}-${classe.name}.json`;
+
+        // Create blob and download
+        const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
     const handleDeleteSaveNow = () => {
         saveNow();
     }
@@ -125,10 +156,14 @@ function Settings() {
                     />
                     <p>secondi</p>
                 </div>
-                <div>
+                <div className='flex flex-row gap-2'>
                     <button onClick={handleDeleteSaveNow} className='flex flex-row gap-2 rounded-md items-center justify-between py-2 px-4 text-center text-sm transition-all text-secondary fill-secondary hover:text-primary hover:fill-primary hover:bg-secondary hover:border-secondary focus:text-primary focus:fill-primary focus:bg-secondary focus:border-secondary active:border-secondary active:text-primary active:fill-primary active:bg-secondary disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none'>
                         <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path d="M840-680v480q0 33-23.5 56.5T760-120H200q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h480l160 160Zm-80 34L646-760H200v560h560v-446ZM480-240q50 0 85-35t35-85q0-50-35-85t-85-35q-50 0-85 35t-35 85q0 50 35 85t85 35ZM240-560h360v-160H240v160Zm-40-86v446-560 114Z"/></svg>
                         <p>Salva</p>
+                    </button>
+                    <button onClick={handleBackup} className='flex flex-row gap-2 rounded-md items-center justify-between py-2 px-4 text-center text-sm transition-all text-secondary fill-secondary hover:text-primary hover:fill-primary hover:bg-secondary hover:border-secondary focus:text-primary focus:fill-primary focus:bg-secondary focus:border-secondary active:border-secondary active:text-primary active:fill-primary active:bg-secondary disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none'>
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path d="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320ZM200-120v-80h80v-40q0-33 23.5-56.5T360-320h40v-80q0-50 35-85t85-35q50 0 85 35t35 85v80h40q33 0 56.5 23.5T760-240v40h80v80H200Zm160-200v-80h400v80H360Z"/></svg>
+                        <p>Backup</p>
                     </button>
                 </div>
                 <div className='flex flex-row gap-5'>

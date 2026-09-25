@@ -5,7 +5,10 @@ import sha256 from "../utils/sha256";
 
 function Save() {
 
-    const [saveTimer, setSaveTimer] = useState(JSON.parse(sessionStorage.getItem("settings")).saveTimer||JSON.parse(localStorage.getItem('defSettings')).saveTimer);
+    const [saveTimer, setSaveTimer] = useState(() => {
+        const settings = JSON.parse(sessionStorage.getItem("settings"));
+        return settings?.saveTimer || JSON.parse(localStorage.getItem('defSettings')).saveTimer;
+    });
 
     useEffect(() => {
         const interval = setInterval(() => {

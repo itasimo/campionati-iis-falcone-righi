@@ -6,7 +6,7 @@ import EliminaTuttiPopUp from './popup/EliminaTutti';
 
 function ElencoGiocatori() {
 
-    const [players, setPlayers] = useState(JSON.parse(sessionStorage.getItem('players')) || []);
+    const [players, setPlayers] = useState(() => JSON.parse(sessionStorage.getItem('players')) || []);
 
     // Sincronizza la lista dei giocatori con la sessionStorage
     useEffect(() => {

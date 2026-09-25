@@ -36,11 +36,17 @@ function ModificaGiocatore(id, action, name) {
 
     // Aggiorna sessionStorage con i giocatori modificati
     sessionStorage.setItem('players', JSON.stringify(players));
-    sessionStorage.setItem('scontri', JSON.stringify([]));
+
+    // Solo per delete_all, elimina anche gli scontri
+    // Per edit/delete singolo, gli scontri vengono gestiti da ScontriManager
+    if (action === 'delete_all') {
+        sessionStorage.setItem('scontri', JSON.stringify([]));
+    }
+
     // Invia un evento 'StoragePlayerEdit' per notificare che i giocatori sono stati modificati
+    // ScontriManager gestirà l'aggiornamento degli scontri e firerà StorageScontriUpdate
     window.dispatchEvent(new Event('StoragePlayerEdit'));
     window.dispatchEvent(new Event('TabSwitch'));
-    window.dispatchEvent(new Event('StorageScontriUpdate'));
 }
 
 // Esporta la funzione ModificaGiocatore come modulo predefinito

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getPlayerName } from '../utils/getPlayerName.js';
 
 function Classifica() {
 
@@ -10,44 +11,55 @@ function Classifica() {
         }
     }
 
-    const [players, setPlayers] = useState([]);
+    const [players, setPlayers] = useState(() => {
+        const scontri = JSON.parse(sessionStorage.getItem('scontri')) || [];
+        const giocatori = JSON.parse(sessionStorage.getItem('players')) || [];
+        const playerMap = new Map();
+
+        scontri.filter(scontro => scontro.winnerId !== null && scontro.winnerId !== undefined).forEach(scontro => {
+            const winnerId = scontro.winnerId;
+            const winnerName = getPlayerName(winnerId, giocatori);
+
+            if (!playerMap.has(winnerId)) {
+                playerMap.set(winnerId, new PlayerCareer(winnerName, winnerId));
+            } else {
+                playerMap.get(winnerId).wins++;
+            }
+        });
+
+        const players = Array.from(playerMap.values());
+        players.sort((a, b) => b.wins - a.wins);
+        return players;
+    });
 
     useEffect(() => {
         const handleStorageAddPlayers = () => {
-
-            // Recupero gli scontri dalla session storage
             const scontri = JSON.parse(sessionStorage.getItem('scontri')) || [];
+            const giocatori = JSON.parse(sessionStorage.getItem('players')) || [];
+            const playerMap = new Map();
 
-            // Creo un array di oggetti PlayerCareer per tenere traccia delle vittorie di ogni giocatore
-            const players = [];
+            scontri.filter(scontro => scontro.winnerId !== null && scontro.winnerId !== undefined).forEach(scontro => {
+                const winnerId = scontro.winnerId;
+                const winnerName = getPlayerName(winnerId, giocatori);
 
-            // Per ogni scontro giocato, controllo chi è il vincitore e aggiorno il numero di vittorie del giocatore
-            scontri.filter(scontro => scontro.winner !== null).map(scontro => {
-
-                // Se il giocatore non è presente nell'array, lo aggiungo
-                if (players.filter(player => player.id === scontro.winner.id).length === 0) {
-
-                    // Creo un nuovo oggetto PlayerCareer e lo aggiungo all'array
-                    players.push(new PlayerCareer(scontro.winner.name, scontro.winner.id));
+                if (!playerMap.has(winnerId)) {
+                    playerMap.set(winnerId, new PlayerCareer(winnerName, winnerId));
                 } else {
-
-                    // Altrimenti, incremento il numero di vittorie del giocatore
-                    players.filter(player => player.id === scontro.winner.id)[0].wins++;
+                    playerMap.get(winnerId).wins++;
                 }
             });
 
-            // Ordino l'array in base al numero di vittorie
+            const players = Array.from(playerMap.values());
             players.sort((a, b) => b.wins - a.wins);
-
-            // Aggiorno lo stato
             setPlayers(players);
-
         };
 
         window.addEventListener('StorageScontriUpdate', handleStorageAddPlayers);
+        window.addEventListener('StoragePlayerEdit', handleStorageAddPlayers);
 
         return () => {
             window.removeEventListener('StorageScontriUpdate', handleStorageAddPlayers);
+            window.removeEventListener('StoragePlayerEdit', handleStorageAddPlayers);
         };
     }, []);
 
@@ -60,8 +72,8 @@ function Classifica() {
                     {
                         players.map((player, index) => {
                             return (
-                                <div 
-                                    key={index} 
+                                <div
+                                    key={index}
                                     className='cursor-pointer flex flex-row justify-between w-full bg-tertiary rounded-lg h-10 items-center p-2'
                                     onMouseEnter={(e) => {
                                         const classes = (leaderboardColors[index] || '!bg-secondary').split(' ');

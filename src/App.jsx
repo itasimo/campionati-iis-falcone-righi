@@ -11,7 +11,7 @@ import Grafico from './components/Grafico';
 import Classifica from './components/Classifica';
 import Settings from './components/Settings';
 
-import ScontriManager from './scripts/ScontriManager';
+import ScontriManager from './scripts/matchesManager';
 import { Save } from './scripts/Save';
 
 

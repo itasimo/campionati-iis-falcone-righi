@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 function AggiungiGiocatori() {
     const [option, setOption] = useState(''); // Stato per l'opzione selezionata
-    const [players, setPlayers] = useState(JSON.parse(sessionStorage.getItem('players')) || []); // Stato per la lista dei giocatori
+    const [players, setPlayers] = useState(() => JSON.parse(sessionStorage.getItem('players')) || []); // Stato per la lista dei giocatori
 
     // Classe per rappresentare un giocatore
     class Player {
